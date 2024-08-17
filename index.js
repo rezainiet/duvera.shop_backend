@@ -8,9 +8,8 @@ app.use(express.json());
 app.use(cors());
 require('dotenv').config();
 
-
-// `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.qbc3sln.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
-const uri = "mongodb+srv://luster321:N8LFL890X6C1BMSU@cluster0.gszte.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// Use environment variables for the MongoDB URI
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.gszte.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
     serverApi: {
@@ -20,36 +19,56 @@ const client = new MongoClient(uri, {
     }
 });
 
-
 async function run() {
     try {
-        client.connect();
-        console.log('database connected')
+        await client.connect();
+        console.log('Database connected');
         const ordersCollection = client.db('duvera').collection('orders');
 
         app.get('/orders', async (req, res) => {
-            const orders = await ordersCollection.find({}).toArray()
-            res.send(orders);
-        })
+            try {
+                const orders = await ordersCollection.find({}).toArray();
+                res.send(orders);
+            } catch (error) {
+                res.status(500).send({ error: 'Failed to fetch orders' });
+            }
+        });
+
+        app.post('/create-order', async (req, res) => {
+            try {
+                const order = req.body;
+                const result = await ordersCollection.insertOne(order);
+                res.send(result);
+            } catch (error) {
+                res.status(500).send({ error: 'Failed to create order' });
+            }
+        });
+
+        app.delete("/delete-order/:id", async (req, res) => {
+            try {
+                const orderID = new ObjectId(req.params.id);
+                const result = await ordersCollection.deleteOne({ _id: orderID });
+                if (result.deletedCount === 0) {
+                    res.status(404).send({ error: 'Order not found' });
+                } else {
+                    res.send({ message: 'Order deleted successfully' });
+                }
+            } catch (error) {
+                res.status(500).send({ error: 'Failed to delete order' });
+            }
+        });
+    } finally {
+        // Optional: close the client connection if you want to clean up resources
+        // await client.close();
     }
-
-    finally {
-        // jnjsf
-        // console.log('here is finally')
-    }
-};
-
-
-
+}
 
 run().catch(console.dir);
 
 app.get('/', (req, res) => {
-    res.send('App is configuring...')
+    res.send('App is configuring...');
 });
-
 
 app.listen(port, () => {
-    console.log(`App is running on port ${port}`)
+    console.log(`App is running on port ${port}`);
 });
-
