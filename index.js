@@ -36,6 +36,7 @@ async function run() {
         });
 
         // 2. Update Order Status
+        // updated the api
         app.patch('/update-order-status/:id', async (req, res) => {
             try {
                 const orderID = new ObjectId(req.params.id);
