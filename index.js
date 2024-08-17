@@ -27,6 +27,10 @@ async function run() {
         console.log('database connected')
         const ordersCollection = client.db('duvera').collection('orders');
 
+        app.get('/orders', async (req, res) => {
+            const orders = await ordersCollection.find({}).toArray()
+            res.send(orders);
+        })
     }
 
     finally {
@@ -41,7 +45,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get('/', (req, res) => {
-    res.send('App is running on secure server? The answer is Yeah!')
+    res.send('App is configuring...')
 });
 
 
