@@ -66,6 +66,8 @@ async function run() {
         });
 
         // 4. Get Order Summary
+        
+        //  it's a demonstrate push for testing that vercel is working properly
         app.get('/orders/summary', async (req, res) => {
             try {
                 const totalOrders = await ordersCollection.countDocuments();
